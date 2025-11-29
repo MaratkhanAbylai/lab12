@@ -1,0 +1,52 @@
+@startuml
+actor User
+participant System
+participant PaymentGateway
+database DB
+
+User -> System: Выбор курса
+System -> DB: Проверка доступности курса
+DB --> System: Результат
+
+alt Курс доступен
+    System -> DB: Добавить пользователя в список
+else Курс недоступен
+    System -> User: Уведомление "Курс недоступен"
+    return
+end
+
+User -> System: Выбор способа оплаты
+
+alt Онлайн-оплата
+    System -> PaymentGateway: Запрос платежа
+    PaymentGateway --> System: Статус платежа
+    
+    alt Платёж успешен
+        System -> DB: Активировать доступ
+        System -> User: Доступ к курсу открыт
+    else Платёж отклонён
+        System -> User: Уведомление "Оплата отклонена"
+        return
+    end
+else Оплата через банк
+    System -> User: Инструкция по оплате
+end
+
+User -> System: Начало обучения
+System -> DB: Запись прогресса
+
+User -> System: Завершение всех модулей
+System -> DB: Проверка результатов
+
+alt Результаты удовлетворительные
+    System -> DB: Создать запись о сертификате
+    System -> User: Сертификат доступен
+else Неудовлетворительные
+    System -> User: Уведомление о необходимости пересдачи
+    return
+end
+
+User -> System: Запрос сертификата
+System -> DB: Получить файл
+System -> User: Отправка сертификата
+@enduml
